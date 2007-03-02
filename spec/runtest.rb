@@ -1,5 +1,5 @@
 require 'rubygems'
-gem 'rspec', "> 0"
+gem 'rspec', ">= 0.8.0"
 require 'spec'
 
 Spec::Runner::CommandLine::run(

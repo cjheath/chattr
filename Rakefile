@@ -18,7 +18,7 @@ task :test do
 
     $LOAD_PATH.unshift "lib"	# Make sure we know where to find the module
     Spec::Runner::CommandLine::run(
-	    %w{test/chattr_spec.rb -f s},
+	    %w{spec/chattr_spec.rb -f s},
 	    $stderr, $stdout,
 	    false		# Don't exit after testing
 	)
@@ -45,7 +45,7 @@ task :packaging do
 	s.files      += [ "LICENSE" ]
 	s.require_path      = "lib"
 	s.autorequire       = "chattr"
-	s.test_file         = "test/runtest.rb"
+	s.test_file         = "spec/runtest.rb"
 	s.has_rdoc          = true
 	s.extra_rdoc_files  = []
     end
