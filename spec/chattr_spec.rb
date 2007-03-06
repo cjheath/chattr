@@ -1,69 +1,85 @@
 require "chattr"
 
-context "Member element of Array of a specified type" do
-    setup do
-	@int_array_class = Array(Integer)
-	@a = @int_array_class.new
-	@r = nil
-    end
+contexts = [
+    [ "Member element of Array of Integer type", lambda{ @array_class = Array(Integer) }, 2 ],
+    [ "Member element of Array of String type", lambda{ @array_class = Array(String) }, "foo" ]
+]
 
-    # Member assignment:
-    specify "should allow that type to be assigned" do
-	lambda{@r = (@a[0] = 2)}.should_not raise_error
-	@r.should == 2
-    end
+contexts.each do |p| context_name, context_setup, context_value = *p
 
-    specify "should error when other type is assigned to a member" do
-	@a << 1
-	lambda{@a[0] << "foo"}.should raise_error(TypeError)
-    end
+    context context_name do
+	setup do
+	    instance_eval &context_setup
+	    @a = @array_class.new
+	    @r = nil
+	    @v = context_value
+	end
 
-    specify "should contain only the value assigned" do
-	@r = (@a[0] = 2)
-	@a[0].should == 2
-	@a.size.should == 1
-	@r.should == 2
-    end
+	# Member assignment:
+	specify "should allow that type to be assigned" do
+	    lambda{@r = (@a[0] = @v)}.should_not raise_error
+	    @r.should == @v
+	end
 
-    specify "should allow that type to be appended" do
-	lambda{@r = (@a << 4)}.should_not raise_error
-	@r.should == [4]
-    end
+	specify "should error when other type is assigned to a member" do
+	    @a << @v
+	    lambda{@a[0] = []}.should raise_error(NameError)
+	end
 
-    specify "should return nil on a positive out-of-bounds index" do
-	@r = (@a << 1)
-	@a[4].should == nil
-	@r.should == [1]
-    end
+	specify "should contain only the value assigned" do
+	    @r = (@a[0] = @v)
+	    @a[0].should == @v
+	    @a.size.should == 1
+	    @r.should == @v
+	end
 
-    specify "should return nil on a negative out-of-bounds index" do
-	@r = (@a << 1)
-	@a[-5].should == nil
-	@r.should == [1]
-    end
+	specify "should allow that type to be appended" do
+	    lambda{@r = (@a << @v)}.should_not raise_error
+	    @r.should == [@v]
+	end
 
-    specify "should replace() the value correctly" do
-	@a.concat [1, 2]
-	@r = (@a.replace [6, 7, 8])
-	@a[0].should == 6
-	@a[1].should == 7
-	@a[2].should == 8
-	@a[3].should == nil
-	@a.size.should == 3
-	@r.should == [6, 7, 8]
-    end
+	specify "should return nil on a positive out-of-bounds index" do
+	    @r = (@a << @v)
+	    @a[4].should == nil
+	    @r.should == [@v]
+	end
 
-    specify "should throw error when replace breaks the constraints" do
-	@a.concat [1, 2]
-	lambda{ @a.replace [6, "oops", 8] }.should raise_error
-	@a.should == [1, 2]
+	specify "should return nil on a negative out-of-bounds index" do
+	    @r = (@a << @v)
+	    @a[-5].should == nil
+	    @r.should == [@v]
+	end
+
+	specify "should replace() the value correctly" do
+	    a = @v
+	    b = @v+@v
+	    c = b+@v
+	    d = b+b
+	    @a.concat [a, b]
+	    @r = (@a.replace [c, d])
+	    @a[0].should == c
+	    @a[1].should == d
+	    @a[2].should == nil
+	    @a.size.should == 2
+	    @r.should == [c, d]
+	end
+
+	specify "should throw error when replace breaks the constraints" do
+	    a = @v
+	    b = @v+@v
+	    c = b+@v
+	    d = b+b
+	    @a.concat [a, b]
+	    lambda{ @a.replace [c, {}, d] }.should raise_error
+	    @a.should == [a, b]
+	end
     end
 end
 
 context "Appending and inserting to Array of a specified type" do
     setup do
-	@int_array_class = Array(Integer)
-	@a = @int_array_class.new
+	@array_class = Array(Integer)
+	@a = @array_class.new
     end
 
     specify "should contain only the value appended" do
@@ -96,7 +112,7 @@ context "Appending and inserting to Array of a specified type" do
 
     specify "should allow a matching checked array to be concatenated" do
 	@a << 7
-	@addend = @int_array_class.new
+	@addend = @array_class.new
 	@addend << 8
 	@addend << 9
 	lambda{@a.concat(@addend)}.should_not raise_error
@@ -141,8 +157,8 @@ end
 
 context "When using fill() with an Array of a specified type" do
     setup do
-	@int_array_class = Array(Integer)
-	@a = @int_array_class.new
+	@array_class = Array(Integer)
+	@a = @array_class.new
     end
 
     specify "should error when filled with an invalid value" do
@@ -243,8 +259,8 @@ end
 
 context "When using reflexive collect and map with Array" do
     setup do
-	@int_array_class = Array(Integer)
-	@a = @int_array_class.new
+	@array_class = Array(Integer)
+	@a = @array_class.new
     end
 
     specify "should work as long as constraints not broken" do

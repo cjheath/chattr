@@ -41,7 +41,7 @@ task :packaging do
 	s.homepage   = "http://rubyforge.org/projects/chattr"
 	s.platform   = Gem::Platform::RUBY
 	s.summary    = "Methods for defining type-checked arrays and attributes"
-	s.files      = FileList["{bin,lib,test}/**/*"].to_a
+	s.files      = FileList["{bin,lib,spec}/**/*"].to_a
 	s.files      += [ "LICENSE" ]
 	s.require_path      = "lib"
 	s.autorequire       = "chattr"
