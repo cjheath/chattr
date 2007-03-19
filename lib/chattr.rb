@@ -24,13 +24,13 @@ When any value is entered into the Array, by any method,
 that doesn't satisfy your checks, you'll get a nice exception.
 Beware of catching this exception, as in some cases
 (+flatten+ for instance) the operation has been completed
-before the new array value is checked and the exception thrown.
+before the new array value is checked and the exception raised.
 
 Here's a simple example:
     int_array = Array(Integer).new
     int_array << 4
     int_array.concat [ 6, 8, 10 ]
-    int_array << "Oops"                 # This will throw an exception
+    int_array << "Oops"                 # This will raise an exception
 
 Surprisingly, a call to <tt>Array()</tt> works even as a superclass in a new class definition:
     class MyArray < Array(Integer)
@@ -39,12 +39,12 @@ Surprisingly, a call to <tt>Array()</tt> works even as a superclass in a new cla
         end
     end
 
-and you can even use both together. An exception is thrown if the block returns false/nil:
+and you can even use both together. An exception is raised if the block returns false/nil:
     class MyArray < Array(Integer) {|i|
             (0..5).include?(i)          # Value must be an integer from 0 to 5
         }
     end
-    MyArray.new << 6                    # This will throw an exception
+    MyArray.new << 6                    # This will raise an exception
 
 The parameter to Array is optional, which removes the class check.
 You can use this to implement type checking that's all your own:
@@ -91,16 +91,16 @@ def Array(type = nil, &block)
 		if (a.size == 1 && a[0].class != Fixnum)
 		    r.concat(a[0])
 		elsif (b)
-		    throw "Wrong number of parameters for Array.new" if a.size != 1
+		    raise "Wrong number of parameters for Array.new" if a.size != 1
 		    (0...a[0]).each{|i|
 			v = b.call(i)
-			throw "Illegal array member from block initializer: \#{v.inspect}" unless @@_valid_type.call(v)
+			raise "Illegal array member from block initializer: \#{v.inspect}" unless @@_valid_type.call(v)
 			r[i] = v
 		    }
 		else
 		    v = a[1] || nil
 		    if (a[1])
-			throw "Illegal array member initializer: \#{v.inspect}" unless @@_valid_type.call(v)
+			raise "Illegal array member initializer: \#{v.inspect}" unless @@_valid_type.call(v)
 		    end
 		    if (a.size > 0)
 			(0...a[0]).each_index{|i|
@@ -118,18 +118,18 @@ def Array(type = nil, &block)
 
 	    def []=(*args)
 		element = args.last
-		throw "Illegal array member assignment: \#{element.inspect}" unless @@_valid_type.call(element)
+		raise "Illegal array member assignment: \#{element.inspect}" unless @@_valid_type.call(element)
 		super(*args)
 	    end
 
 	    def <<(element)
-		throw "Illegal array member append: \#{element.inspect}" unless @@_valid_type.call(element)
+		raise "Illegal array member append: \#{element.inspect}" unless @@_valid_type.call(element)
 		super(element)
 	    end
 
 	    def concat(other)
 		other.each{|e|
-		    throw "Illegal array member in concat: \#{e.inspect}" unless @@_valid_type.call(e)
+		    raise "Illegal array member in concat: \#{e.inspect}" unless @@_valid_type.call(e)
 		}
 		super(other)
 	    end
@@ -137,7 +137,7 @@ def Array(type = nil, &block)
 	    def fill(*a, &b)
 		unless b
 		    v = a.shift
-		    throw "Illegal array value fill: \#{v.inspect}" unless @@_valid_type.call(v)
+		    raise "Illegal array value fill: \#{v.inspect}" unless @@_valid_type.call(v)
 		    b = lambda{|i| v}
 		end
 
@@ -152,7 +152,7 @@ def Array(type = nil, &block)
 		    r = (a[0]..self.size-1) unless r.kind_of?(Range)
 		    r.each{|i|
 			e = b.call(i)
-			throw "Illegal array block fill: \#{e.inspect}" unless @@_valid_type.call(e)
+			raise "Illegal array block fill: \#{e.inspect}" unless @@_valid_type.call(e)
 			self[i] = e
 		    }
 		when 2
@@ -164,7 +164,7 @@ def Array(type = nil, &block)
 
 	    def check_valid(operation)
 		each{|e|
-		    throw "Illegal array element: \#{e.inspect} after \#{operation}" unless @@_valid_type.call(e)
+		    raise "Illegal array element: \#{e.inspect} after \#{operation}" unless @@_valid_type.call(e)
 		}
 	    end
 
@@ -176,7 +176,7 @@ def Array(type = nil, &block)
 		rescue
 		    clear
 		    concat saved
-		    throw
+		    raise
 		end
 		a
 	    end
@@ -189,7 +189,7 @@ def Array(type = nil, &block)
 		rescue
 		    clear   # Restore the value
 		    concat saved
-		    throw
+		    raise
 		end
 		self
 	    end
@@ -197,7 +197,7 @@ def Array(type = nil, &block)
 	    def insert(*a)
 		start = a.shift
 		a.each{|e|
-		    throw "Illegal array element insert: \#{e.inspect}" unless @@_valid_type.call(e)
+		    raise "Illegal array element insert: \#{e.inspect}" unless @@_valid_type.call(e)
 		}
 		super(start, *a)
 	    end
@@ -205,7 +205,7 @@ def Array(type = nil, &block)
 	    def collect!
 		each_with_index{|e, i|
 		    v = yield(e)
-		    throw "Illegal array element in collect!: \#{v.inspect}" unless @@_valid_type.call(v)
+		    raise "Illegal array element in collect!: \#{v.inspect}" unless @@_valid_type.call(v)
 		    self[i] = v
 		}
 		self
@@ -243,7 +243,7 @@ call-seq:
 
 typed_attr is like attr_accessor,
 but with optional value checking using either _class_.kind_of? or by calling your block,
-or both. Assignment of any value that fails the checks causes an assertion to be thrown.
+or both. Assignment of any value that fails the checks causes an assertion to be raised.
 
 The parameter list is processed in order, and may contain:
 - a class. The following attributes will require values that are <tt>kind_of?</tt> this class
@@ -254,7 +254,7 @@ The parameter list is processed in order, and may contain:
 
 In addition, typed_attr may be given a block.
 Any value to be assigned will be passed to this block,
-which must not return false/nil or an exception will be thrown.
+which must not return false/nil or an exception will be raised.
 You'll need to parenthesize the parameter list for a {|| } block,
 or just use a do...end block.
 
@@ -301,11 +301,11 @@ constructor.
 		define_method("#{name}=") {|val|
 		    if val == nil
 			unless nil_ok
-			    throw "Can't assign nil to #{name} which is restricted to class #{klass}"
+			    raise "Can't assign nil to #{name} which is restricted to class #{klass}"
 			end
 		    else
 			if !val.kind_of?(klass)
-			    throw "Can't assign #{val.inspect} of class #{val.class} to attribute #{name} which is restricted to class #{klass}"
+			    raise "Can't assign #{val.inspect} of class #{val.class} to attribute #{name} which is restricted to class #{klass}"
 			elsif (block && !block.call(val))
 			    raise "Invalid value assigned to #{name}: #{val.inspect}"
 			end
@@ -333,7 +333,7 @@ The parameter list is processed in order, and may contain:
 
 In addition, array_attr may be given a block.
 Any value to be used as a member of the array will be passed to this block,
-which must not return false/nil or an exception will be thrown.
+which must not return false/nil or an exception will be raised.
 You'll need to parenthesize the parameter list for a {|| } block,
 or just use a do...end block.
 
@@ -375,11 +375,11 @@ Here's an example:
 			a.concat(val)   # If conversion is legal, this will do it
 		    rescue
 			instance_variable_set("@#{name}", saved)
-			throw
+			raise
 		    end
 		}
 	    else
-		throw "Parameter to array_attr must be Class or Symbol"
+		raise "Parameter to array_attr must be Class or Symbol"
 	    end
 	}
     end

@@ -23,7 +23,7 @@ contexts.each do |p| context_name, context_setup, context_value = *p
 
 	specify "should error when other type is assigned to a member" do
 	    @a << @v
-	    lambda{@a[0] = []}.should raise_error(NameError)
+	    lambda{@a[0] = []}.should raise_error(RuntimeError)
 	end
 
 	specify "should contain only the value assigned" do

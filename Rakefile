@@ -35,7 +35,7 @@ CLOBBER.include("pkg")	# Make sure we clean up the gem
 task :packaging do
     spec = Gem::Specification.new do |s|
 	s.name       = "chattr"
-	s.version    = "0.9.0"
+	s.version    = "0.9.1"
 	s.author     = "Clifford Heath"
 	s.email      = "clifford dot heath at gmail dot com"
 	s.homepage   = "http://rubyforge.org/projects/chattr"
