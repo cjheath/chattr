@@ -9,8 +9,23 @@ require 'rake/rdoctask'
 require 'rake/gempackagetask'
 require 'rake/clean'
 require 'spec'
+require 'spec/rake/spectask'
 
 task :default => [ :test, :rdoc, :packaging, :package ]
+
+desc "Generate RCOV report from all specs"
+Spec::Rake::SpecTask.new('specs_rcov') do |t|
+  t.spec_files = FileList['spec/**/*.rb']
+  t.rcov = true
+end
+
+desc "Generate HTML report from all specs"
+Spec::Rake::SpecTask.new('specs_html') do |t|
+  t.spec_files = FileList['spec/**/*.rb']
+  t.spec_opts = ["--format", "html", "--diff"]
+  t.out = 'rspec-output.html'
+  t.fail_on_error = false
+end
 
 task :test do
     gem 'rspec', "> 0"
